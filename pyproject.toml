@@ -1,0 +1,21 @@
+[project]
+name = "aina-gateway"
+version = "0.1.0"
+description = "MCP Gateway for PixelMemory - exposes local Pixeltable memory via Streamable HTTP"
+requires-python = ">=3.10"
+dependencies = [
+    "mcp>=1.8.0",
+    "pixeltable>=0.2.0",
+    "uvicorn>=0.30.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "httpx>=0.27.0",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+]
+
+[project.scripts]
+aina-gateway = "src.server:main"
