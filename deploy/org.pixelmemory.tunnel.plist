@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>org.pixelmemory.tunnel</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <!-- EDIT: Full path to cloudflared (run: which cloudflared) -->
+        <string>/opt/homebrew/bin/cloudflared</string>
+        <string>tunnel</string>
+        <string>run</string>
+        <!-- EDIT: Your tunnel name -->
+        <string>pixelmemory</string>
+    </array>
+
+    <!-- Auto-start at login -->
+    <key>RunAtLoad</key>
+    <true/>
+
+    <!-- Restart on crash (not on clean exit) -->
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+    </dict>
+    <key>ThrottleInterval</key>
+    <integer>10</integer>
+
+    <!-- EDIT: Log paths -->
+    <key>StandardOutPath</key>
+    <string>/Users/YOURUSERNAME/Library/Logs/pixelmemory-tunnel.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/YOURUSERNAME/Library/Logs/pixelmemory-tunnel.error.log</string>
+</dict>
+</plist>

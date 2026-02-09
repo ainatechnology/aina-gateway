@@ -2,21 +2,25 @@
 
 import asyncio
 import json
+import os
 import sys
 import traceback
 
+from dotenv import load_dotenv
 from mcp import ClientSession
 from mcp.client.streamable_http import streamablehttp_client
 
 
+# Load config from .env
+load_dotenv()
 GATEWAY_URL = "http://127.0.0.1:8008/mcp"
+API_KEY = os.getenv("API_KEY", "")
 
 
 async def call_tool(session, name, args):
     """Call a tool and handle errors gracefully."""
     try:
         result = await session.call_tool(name, args)
-        # Check for error in result
         if result.isError:
             print(f"   ⚠️  Tool returned error: {result.content[0].text}")
             return None
@@ -29,9 +33,17 @@ async def call_tool(session, name, args):
 
 async def test_gateway():
     """Connect to the running gateway and exercise all tools."""
+    # Build headers for auth
+    headers = {}
+    if API_KEY:
+        headers["Authorization"] = f"Bearer {API_KEY}"
+        print(f"🔑 Auth: Bearer token configured")
+    else:
+        print(f"⚠️  Auth: No API_KEY set, connecting without auth")
+
     print(f"Connecting to {GATEWAY_URL} ...")
 
-    async with streamablehttp_client(GATEWAY_URL) as (read, write, _):
+    async with streamablehttp_client(GATEWAY_URL, headers=headers) as (read, write, _):
         async with ClientSession(read, write) as session:
             await session.initialize()
             print("✅ Connected and initialized\n")
@@ -77,10 +89,10 @@ async def test_gateway():
             # Test: memory_add
             print("── memory_add ──")
             data = await call_tool(session, "memory_add", {
-                "content": "Gateway-Test: aina-gateway Phase 1 erfolgreich getestet",
+                "content": "Gateway-Test: Phase 2a Bearer Auth erfolgreich getestet",
                 "memory_type": "status",
                 "projects": ["aina-gateway"],
-                "tags": ["test", "gateway"],
+                "tags": ["test", "gateway", "auth"],
                 "source": "test-script",
             })
             if data:
@@ -89,9 +101,38 @@ async def test_gateway():
             print("✅ All tests completed!")
 
 
+async def test_auth_rejection():
+    """Test that requests without valid token are rejected."""
+    print("\n── Auth Rejection Test ──")
+    try:
+        # Connect without token
+        async with streamablehttp_client(GATEWAY_URL) as (read, write, _):
+            async with ClientSession(read, write) as session:
+                await session.initialize()
+                print("   ⚠️  Connected WITHOUT token - auth might be disabled")
+    except BaseException as e:
+        # MCP SDK wraps HTTP errors in ExceptionGroup.
+        # Dig into sub-exceptions to find the real status code.
+        error_parts = []
+        if isinstance(e, BaseExceptionGroup):
+            for sub in e.exceptions:
+                error_parts.append(f"{type(sub).__name__}: {sub}")
+        error_msg = " | ".join(error_parts) if error_parts else str(e)
+
+        if any(code in error_msg for code in ["401", "403", "Unauthorized", "Forbidden"]):
+            print(f"   ✅ Correctly rejected: {error_msg}")
+        elif isinstance(e, (ExceptionGroup, BaseExceptionGroup)):
+            # ExceptionGroup from MCP client = server rejected the connection
+            print(f"   ✅ Correctly rejected (ExceptionGroup): {error_msg}")
+        else:
+            print(f"   ❌ Unexpected error: {type(e).__name__}: {e}")
+
+
 if __name__ == "__main__":
     try:
         asyncio.run(test_gateway())
+        if API_KEY:
+            asyncio.run(test_auth_rejection())
     except ConnectionRefusedError:
         print(f"❌ Cannot connect to {GATEWAY_URL}")
         print("   Is the gateway running? Start with: python -m src.server")

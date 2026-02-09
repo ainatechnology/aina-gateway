@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>org.pixelmemory.gateway</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <!-- EDIT: Full path to your Python in the project's .venv -->
+        <string>/path/to/pixelmemory-gateway/.venv/bin/python3</string>
+        <string>-m</string>
+        <string>src.server</string>
+    </array>
+
+    <!-- EDIT: Full path to your project directory -->
+    <key>WorkingDirectory</key>
+    <string>/path/to/pixelmemory-gateway</string>
+
+    <!-- Authless mode for claude.ai (IP whitelist protects the endpoint) -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>API_KEY</key>
+        <string></string>
+    </dict>
+
+    <!-- Auto-start at login -->
+    <key>RunAtLoad</key>
+    <true/>
+
+    <!-- Restart on crash (not on clean exit) -->
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+    </dict>
+    <key>ThrottleInterval</key>
+    <integer>10</integer>
+
+    <!-- EDIT: Log paths -->
+    <key>StandardOutPath</key>
+    <string>/Users/YOURUSERNAME/Library/Logs/pixelmemory-gateway.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/YOURUSERNAME/Library/Logs/pixelmemory-gateway.error.log</string>
+</dict>
+</plist>
